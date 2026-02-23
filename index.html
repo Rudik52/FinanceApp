@@ -1,24 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Finance App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f9;
+      font-family: Arial;
+      background: #f4f6f9;
       display: flex;
       justify-content: center;
-      padding: 20px;
+      padding-top: 50px;
     }
 
-    .container {
+    .card {
       background: white;
       padding: 25px;
+      width: 350px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
     h2 {
@@ -26,36 +29,38 @@
       margin-bottom: 20px;
     }
 
-    input, select {
+    input, select, button {
       width: 100%;
       padding: 10px;
-      margin: 8px 0 15px 0;
-      border-radius: 8px;
+      margin-top: 10px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      font-size: 16px;
+      font-size: 14px;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background-color: #007bff;
+      background: #2e7d32;
       color: white;
-      font-size: 16px;
+      border: none;
       cursor: pointer;
     }
 
     button:hover {
-      background-color: #0056b3;
+      background: #1b5e20;
+    }
+
+    #status {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 13px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h2>Personal Finance</h2>
+<div class="card">
+  <h2>Finance Tracker</h2>
 
   <input type="date" id="date">
   <input type="text" id="description" placeholder="Description">
@@ -66,21 +71,88 @@
     <option value="Expense">Expense</option>
   </select>
 
-  <button onclick="saveData()">Save Transaction</button>
+  <button onclick="saveData()">Save</button>
+
+  <div id="status"></div>
 </div>
 
 <script>
-function saveData() {
-  alert("Transaction saved (demo)");
-}
+  const CLIENT_ID = "266074828468-grq0mdh6uikn50h0espr2abvofth4qkd.apps.googleusercontent.com";
+  const API_KEY = "";
+  const SPREADSHEET_ID = "1cH-5GZmEdhTAI-768QAHA46vc4-ENXQEmfeMLJAmN8Q/edit?gid=1960005697#gid=1960005697";
+  
+  const RANGE = "sh01!A:D";  // <-- YOUR sheet tab name
+
+  function gapiLoaded() {
+    gapi.load('client', initializeGapiClient);
+  }
+
+  async function initializeGapiClient() {
+    await gapi.client.init({
+      apiKey: API_KEY,
+      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+    });
+  }
+
+  function saveData() {
+
+    const date = document.getElementById("date").value;
+    const description = document.getElementById("description").value;
+    const amount = document.getElementById("amount").value;
+    const type = document.getElementById("type").value;
+
+    if (!date || !description || !amount) {
+      document.getElementById("status").innerHTML =
+        "<span style='color:red'>Please fill all fields</span>";
+      return;
+    }
+
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: "https://www.googleapis.com/auth/spreadsheets",
+      callback: async (response) => {
+
+        if (response.error) {
+          document.getElementById("status").innerHTML =
+            "<span style='color:red'>Authorization failed</span>";
+          return;
+        }
+
+        gapi.client.setToken(response);
+
+        try {
+          await gapi.client.sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: RANGE,
+            valueInputOption: "RAW",
+            resource: {
+              values: [[date, description, amount, type]]
+            }
+          });
+
+          document.getElementById("status").innerHTML =
+            "<span style='color:green'>Saved successfully ✔</span>";
+
+          document.getElementById("description").value = "";
+          document.getElementById("amount").value = "";
+
+        } catch (err) {
+          document.getElementById("status").innerHTML =
+            "<span style='color:red'>Error saving data</span>";
+        }
+      }
+    });
+
+    tokenClient.requestAccessToken();
+  }
+
+  gapiLoaded();
 </script>
 
 </body>
 </html>
 
 //Replace:
-
 //YOUR_CLIENT_ID_HERE
-
-
 //YOUR_SPREADSHEET_ID_HERE
+
