@@ -2,64 +2,77 @@
 <html>
 <head>
   <title>Finance App</title>
-  <script src="https://apis.google.com/js/api.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 15px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Personal Finance Tracker</h2>
+<div class="container">
+  <h2>Personal Finance</h2>
 
-<button onclick="authenticate()">Login</button>
+  <input type="date" id="date">
+  <input type="text" id="description" placeholder="Description">
+  <input type="number" id="amount" placeholder="Amount">
 
-<h3>Add Transaction</h3>
+  <select id="type">
+    <option value="Income">Income</option>
+    <option value="Expense">Expense</option>
+  </select>
 
-<input type="date" id="date"><br>
-<select id="type">
-  <option value="Income">Income</option>
-  <option value="Expense">Expense</option>
-</select><br>
-
-<input type="text" id="category" placeholder="Category"><br>
-<input type="text" id="description" placeholder="Description"><br>
-<input type="number" id="amount" placeholder="Amount"><br>
-
-<button onclick="addTransaction()">Add</button>
+  <button onclick="saveData()">Save Transaction</button>
+</div>
 
 <script>
-
-const CLIENT_ID = "56126764070-e7to8fu5epphcbnpb377mbjf124pr3tj.apps.googleusercontent.com";
-const API_KEY = "";
-const SPREADSHEET_ID = "1cH-5GZmEdhTAI-768QAHA46vc4-ENXQEmfeMLJAmN8Q";
-
-function authenticate() {
-  gapi.load('client:auth2', () => {
-    gapi.client.init({
-      clientId: CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/spreadsheets'
-    }).then(() => {
-      return gapi.auth2.getAuthInstance().signIn();
-    });
-  });
+function saveData() {
+  alert("Transaction saved (demo)");
 }
-
-function addTransaction() {
-  const values = [[
-    document.getElementById("date").value,
-    document.getElementById("type").value,
-    document.getElementById("category").value,
-    document.getElementById("description").value,
-    document.getElementById("amount").value
-  ]];
-
-  gapi.client.sheets.spreadsheets.values.append({
-    spreadsheetId: SPREADSHEET_ID,
-    range: "Transactions!A:E",
-    valueInputOption: "USER_ENTERED",
-    resource: { values: values }
-  }).then(response => {
-    alert("Transaction Added!");
-  });
-}
-
 </script>
 
 </body>
@@ -68,5 +81,6 @@ function addTransaction() {
 //Replace:
 
 //YOUR_CLIENT_ID_HERE
+
 
 //YOUR_SPREADSHEET_ID_HERE
